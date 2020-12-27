@@ -9,14 +9,14 @@ from .auth.auth import AuthError, requires_auth
 
 app = Flask(__name__)
 setup_db(app)
-CORS(app)
+#CORS(app)
 
 '''
 @TODO uncomment the following line to initialize the datbase
 !! NOTE THIS WILL DROP ALL RECORDS AND START YOUR DB FROM SCRATCH
 !! NOTE THIS MUST BE UNCOMMENTED ON FIRST RUN
 '''
-db_drop_and_create_all()
+#db_drop_and_create_all()
 
 ## ROUTES
 @app.route('/drinks', methods=['GET'])
@@ -80,13 +80,15 @@ def post_new_drink():
     body = request.get_json()
     title = body.get('title', None)
     recipe = body.get('recipe', None)
-    if None in [title, recipe]:
+    #Required Dataformat [{'color': string, 'name':string, 'parts':number}]
+    # watch out the brackets have to be inside of the string object
+    recipe_string = json.dumps(recipe)
+    if title == None or recipe_string == None:
         abort(422)
     else:
         try:
-            new_drink = Drink(title, recipe)
+            new_drink = Drink(title=title, recipe=recipe_string)
             new_drink.insert()
-            
             return jsonify({
                     "success": True,
                     "drinks": [new_drink.long()]
@@ -120,7 +122,7 @@ def update_drink(drink_id):
             abort(422)
         else:
             this_drink.title = title
-            this_drink.recipe = recipe
+            this_drink.recipe = json.dumps(recipe)
             try:
                 this_drink.update()
                 return jsonify({
@@ -144,19 +146,19 @@ def delete_drink(drink_id):
         returns status code 200 and json {"success": True, "delete": id} where id is the id of the deleted record
             or appropriate status code indicating reason for failure
     '''
-    this_drink = Drink.query.filter_by(id=drink_id).first()
-    this_drinks_id = this_drink.id
-    if not this_drink:
-        abort(404)
-    else:
-        try:
+    try:
+        this_drink = Drink.query.filter_by(id=drink_id).first()
+        this_drinks_id = this_drink.id
+        if not this_drink:
+            abort(404)
+        else:
             this_drink.delete()
             return jsonify({
                         "success": True,
                         "delete": this_drinks_id
                         })
-        except Exception:
-            abort(422)
+    except Exception:
+        abort(422)
 
 ##########################
 ##### Error Handling #####
