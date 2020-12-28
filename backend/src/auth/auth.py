@@ -9,18 +9,20 @@ AUTH0_DOMAIN = 'fsdn-flask-test.eu.auth0.com'
 ALGORITHMS = ['RS256']
 API_AUDIENCE = 'http://localhost:5000'
 
-## AuthError Exception
+# AuthError Exception
 '''
 AuthError Exception
 A standardized way to communicate auth failure modes
 '''
+
+
 class AuthError(Exception):
     def __init__(self, error, status_code):
         self.error = error
         self.status_code = status_code
 
 
-## Auth Header
+# Auth Header
 
 '''
 @TODO implement get_token_auth_header() method
@@ -30,27 +32,29 @@ class AuthError(Exception):
         it should raise an AuthError if the header is malformed
     return the token part of the header
 '''
+
+
 def get_token_auth_header():
     if 'Authorization' not in request.headers:
         raise AuthError({
             'code': 'authorization_header_not_found',
             'description': 'Authorization header is expected.'
-    }, 401)
-    
+        }, 401)
+
     auth_header = request.headers['Authorization']
     header_parts = auth_header.split(' ')
     if len(header_parts) != 2:
         raise AuthError({
             'code': 'token_not_found',
             'description': 'Token not found.'
-    }, 401)
+        }, 401)
     elif header_parts[0].lower() != 'bearer':
         raise AuthError({
             'code': 'invalid_bearer',
             'description': 'Bearer not found.'
-    }, 401)
+        }, 401)
     return header_parts[1]
-   
+
 
 '''
 @TODO implement check_permissions(permission, payload) method
@@ -63,6 +67,8 @@ def get_token_auth_header():
     it should raise an AuthError if the requested permission string is not in the payload permissions array
     return true otherwise
 '''
+
+
 def check_permissions(permission, payload):
     if payload.get('permissions'):
         token_scopes = payload.get("permissions")
@@ -81,6 +87,7 @@ def check_permissions(permission, payload):
                 'description': 'User does not have any roles attached'
             }, 401)
 
+
 '''
 @TODO implement verify_decode_jwt(token) method
     @INPUTS
@@ -94,14 +101,16 @@ def check_permissions(permission, payload):
 
     !!NOTE urlopen has a common certificate error described here: https://stackoverflow.com/questions/50236117/scraping-ssl-certificate-verify-failed-error-for-http-en-wikipedia-org
 '''
+
+
 def verify_decode_jwt(token):
-     # GET THE PUBLIC KEY FROM AUTH0
+    # GET THE PUBLIC KEY FROM AUTH0
     jsonurl = urlopen(f'https://{AUTH0_DOMAIN}/.well-known/jwks.json')
     jwks = json.loads(jsonurl.read())
-    
+
     # GET THE DATA IN THE HEADER
     unverified_header = jwt.get_unverified_header(token)
-    
+
     # CHOOSE OUR KEY
     rsa_key = {}
     if 'kid' not in unverified_header:
@@ -119,7 +128,7 @@ def verify_decode_jwt(token):
                 'n': key['n'],
                 'e': key['e']
             }
-    
+
     # Finally, verify!!!
     if rsa_key:
         try:
@@ -151,9 +160,10 @@ def verify_decode_jwt(token):
                 'description': 'Unable to parse authentication token.'
             }, 400)
     raise AuthError({
-                'code': 'invalid_header',
+        'code': 'invalid_header',
                 'description': 'Unable to find the appropriate key.'
-            }, 400)
+    }, 400)
+
 
 '''
 @TODO implement @requires_auth(permission) decorator method
@@ -165,6 +175,8 @@ def verify_decode_jwt(token):
     it should use the check_permissions method validate claims and check the requested permission
     return the decorator which passes the decoded payload to the decorated method
 '''
+
+
 def requires_auth(permission=''):
     def requires_auth_decorator(f):
         @wraps(f)
@@ -177,4 +189,4 @@ def requires_auth(permission=''):
         return wrapper
     return requires_auth_decorator
 
-    #https://fsdn-flask-test.eu.auth0.com/authorize?response_type=token&client_id=rzZ5aHZXmesXacutIMtAoDVfu8BqFbP2&redirect_uri=http://localhost:8100
+    # https://fsdn-flask-test.eu.auth0.com/authorize?response_type=token&client_id=rzZ5aHZXmesXacutIMtAoDVfu8BqFbP2&redirect_uri=http://localhost:8100
