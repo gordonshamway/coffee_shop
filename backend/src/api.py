@@ -42,8 +42,8 @@ def get_drinks():
             })
 
 @app.route('/drinks-detail', methods=['GET'])
-#@requires_auth()
-def get_drinks_detail():
+@requires_auth('get:drinks-detail')
+def get_drinks_detail(token):
     '''
     @TODO implement endpoint
         GET /drinks-detail
@@ -66,8 +66,8 @@ def get_drinks_detail():
 
 
 @app.route('/drinks', methods=['POST'])
-#@requires_auth()
-def post_new_drink():
+@requires_auth('post:drinks')
+def post_new_drink(token):
     '''
     @TODO implement endpoint
         POST /drinks
@@ -98,8 +98,8 @@ def post_new_drink():
 
 
 @app.route('/drinks/<int:drink_id>', methods=['PATCH'])
-#@requires_auth()
-def update_drink(drink_id):
+@requires_auth('patch:drinks')
+def update_drink(token, drink_id):
     '''
     @TODO implement endpoint
         PATCH /drinks/<id>
@@ -134,8 +134,8 @@ def update_drink(drink_id):
 
 
 @app.route('/drinks/<int:drink_id>', methods=['DELETE'])
-#@requires_auth()
-def delete_drink(drink_id):
+@requires_auth('delete:drinks')
+def delete_drink(token, drink_id):
     '''
     @TODO implement endpoint
         DELETE /drinks/<id>
