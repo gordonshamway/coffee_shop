@@ -220,3 +220,11 @@ def server_error(error):
         "error": 500,
         "message": "server error"
     }), 500
+
+@app.errorhandler(AuthError)
+def unauthorized(error):
+    return jsonify({
+        "success": False,
+        "error": 401,
+        "message": "Authentication error"
+    })
